@@ -2,10 +2,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import copy
 
-def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals:pd.DataFrame,datetime_intervals_2:pd.DataFrame):
+
+
+def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.DataFrame,datetime_intervals_2_:pd.DataFrame):
+    data=copy.copy(data2)
+    datetime_intervals=copy.copy(datetime_intervals_)
+    datetime_intervals_2=copy.copy(datetime_intervals_2_)
     data['Numerical_Date'] = data['date'].apply(lambda x: x.toordinal())
     fig=plt.figure(figsize=(10, 6))
+    plt.grid()
     ax=sns.boxplot( data=data,x='Numerical_Date',y='value')
 
     dates=data['date'].drop_duplicates()
@@ -38,9 +45,9 @@ def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals:pd.DataFr
         gf_dates_remapped=np.interp(gf_dates,data['Numerical_Date'].unique(),locs)
         print(gf_dates_remapped)
         if i==0:
-            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange',label="WS")
+            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange',label="WS")
         else:
-            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange')
+            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange')
 
     for i,interval in datetime_intervals_2.iterrows():
         start_date = interval[0].toordinal()
@@ -51,12 +58,13 @@ def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals:pd.DataFr
         gf_dates_remapped=np.interp(gf_dates,data['Numerical_Date'].unique(),locs)
         print(gf_dates_remapped)
         if i==0:
-            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple',label="CL")
+            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple',label="CL")
         else:
-            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple')
-
+            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple')
+    
+    
     plt.legend()
-    plt.grid()
+    
     plt.xlabel('Date')
     plt.ylabel('Values')
     plt.title('Boxplot with DateTime X-axis')
