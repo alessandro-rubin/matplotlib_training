@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals):
+def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals:pd.DataFrame,datetime_intervals_2:pd.DataFrame):
     data['Numerical_Date'] = data['date'].apply(lambda x: x.toordinal())
     fig=plt.figure(figsize=(10, 6))
     ax=sns.boxplot( data=data,x='Numerical_Date',y='value')
@@ -29,7 +29,7 @@ def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals):
 
     print(ax.get_xticks())
     # Overlay the intervals on the plot
-    for i,interval in enumerate(datetime_intervals):
+    for i,interval in datetime_intervals.iterrows():
         start_date = interval[0].toordinal()
         print(start_date)
         end_date = interval[1].toordinal()
@@ -38,9 +38,22 @@ def plot_daily_boxplot_with_annot(data:pd.DataFrame,datetime_intervals):
         gf_dates_remapped=np.interp(gf_dates,data['Numerical_Date'].unique(),locs)
         print(gf_dates_remapped)
         if i==0:
-            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5, alpha=0.3, color='orange',label="WS")
+            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange',label="WS")
         else:
-            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5, alpha=0.3, color='orange')
+            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange')
+
+    for i,interval in datetime_intervals_2.iterrows():
+        start_date = interval[0].toordinal()
+        print(start_date)
+        end_date = interval[1].toordinal()
+        print(end_date)
+        gf_dates=[start_date,end_date]
+        gf_dates_remapped=np.interp(gf_dates,data['Numerical_Date'].unique(),locs)
+        print(gf_dates_remapped)
+        if i==0:
+            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple',label="CL")
+        else:
+            plt.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple')
 
     plt.legend()
     plt.grid()
