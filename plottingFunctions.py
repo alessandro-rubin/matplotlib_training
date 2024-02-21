@@ -123,8 +123,11 @@ def string_to_datetime(in_string,dt_format=None):
                     dt_format='%d-%b-%Y %H:%M:%S'
                     out_date = datetime.strptime(in_string,dt_format)
                 except:
-                    print('Coudn\'t convert the string to datetime')
-                    raise ValueError
+                    try:
+                        dt_format='Auto'
+                        out_date=parse(in_string)
+                    except:
+                        raise ValueError
     print(f"{in_string} converted to {out_date} using format {dt_format}")
     return out_date, dt_format
 
