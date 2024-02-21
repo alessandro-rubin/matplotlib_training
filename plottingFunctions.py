@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 import matplotlib.dates as mdates
 import matplotlib.colors as mcolors
+from dateutil.parser import parse
 
 def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.DataFrame,datetime_intervals_2_:pd.DataFrame):
     data=copy.copy(data2)
@@ -106,14 +107,37 @@ def time_interval_plotting(datetime_intervals:pd.DataFrame,xmin,xmax,ymin=.1,yma
     return ax
 
 
-def detail_HI_plot(hi_df:pd.DataFrame,datetime_intervals,interval_annotations=None,start_date=None,end_date=None,figsize=(15,5)):
+def string_to_datetime(in_string,dt_format=None):
+    if dt_format is not None:
+        out_date = datetime.strptime(in_string,dt_format)
+    else:  
+        try:
+            dt_format='%Y-%m-%d'
+            out_date = datetime.strptime(in_string,dt_format)
+        except ValueError:
+            try:
+                dt_format='%Y-%m-%d %H:%M:%S'
+                out_date = datetime.strptime(in_string,dt_format)
+            except ValueError:
+                try:
+                    dt_format='%d-%b-%Y %H:%M:%S'
+                    out_date = datetime.strptime(in_string,dt_format)
+                except:
+                    print('Coudn\'t convert the string to datetime')
+                    raise ValueError
+    print(f"{in_string} converted to {out_date} using format {dt_format}")
+    return out_date, dt_format
+
+def detail_HI_plot(hi_df:pd.DataFrame,datetime_intervals,interval_annotations=None,start_date=None,end_date=None,figsize=(15,5),major_locator=None):
 
     if type(start_date) ==str:
-        start_date = datetime(start_date)
+        start_date,_ = string_to_datetime(start_date)
     if type(end_date) ==str:
-        start_date = datetime(end_date)
-
+        end_date,_ = string_to_datetime(end_date)
+    
     xmin,xmax=np.min(hi_df['timestamp']),np.max(hi_df['timestamp'])
+
+
     if (start_date is not None) and start_date>xmin:
         xmin =start_date
     if (end_date is not None) and end_date<xmax:
@@ -138,8 +162,8 @@ def detail_HI_plot(hi_df:pd.DataFrame,datetime_intervals,interval_annotations=No
 
     plt.ylim(bottom=0)
 
-
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=4))
+    if major_locator is not None:
+        ax.xaxis.set_major_locator(major_locator)
     ax.set_xlim(xmin,xmax)
     #plt.legend([])
     return fig,ax
