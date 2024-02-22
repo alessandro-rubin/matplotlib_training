@@ -73,15 +73,15 @@ def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.Data
     plt.title('Boxplot with DateTime X-axis')
     return fig,ax
 
-def time_interval_plotting(datetime_intervals:pd.DataFrame,xmin,xmax,ymin=.1,ymax=.2,annotations=None,ax=None):
-
+def time_interval_plotting(datetime_intervals_in:pd.DataFrame,xmin,xmax,ymin=.1,ymax=.2,annotations=None,ax=None):
+    datetime_intervals=copy.copy(datetime_intervals_in)
     if ax is None:
         ax=plt.gca()
 
     ax.autoscale(True)
     bbox = dict(boxstyle="round", fc="0.8")
     arrowprops = dict(
-        arrowstyle="->",
+        arrowstyle="-[,widthB=3",
         connectionstyle="angle,angleA=0,angleB=90,rad=10",
         facecolor='red',linewidth=2,edgecolor='red')
 
@@ -96,7 +96,8 @@ def time_interval_plotting(datetime_intervals:pd.DataFrame,xmin,xmax,ymin=.1,yma
         #x_start,x_end=max([interval[1]['begin'],xmin]),min([interval[1]['end'],xmax])
         ax.hlines(ypos+i*5, x_start, x_end)
         if (annotations is not None) and (annotations[i]!=''):
-            ax.annotate(annotations[i],(interval[1]['begin'],ypos+i*5,),bbox=bbox,arrowprops=arrowprops,xytext=(xyoffset,xyoffset),textcoords='offset points',annotation_clip=False)
+            ax.annotate(annotations[i],(interval[1]['begin'],ypos+i*5,),bbox=bbox,arrowprops=arrowprops,
+                        xytext=(xyoffset,xyoffset),textcoords='offset points',annotation_clip=False)
 
         rect=ax.axvspan(x_start, x_end, ymin, ymax, color='gray', alpha=0.5)
         kk=kk+1
@@ -131,8 +132,36 @@ def string_to_datetime(in_string,dt_format=None):
     print(f"{in_string} converted to {out_date} using format {dt_format}")
     return out_date, dt_format
 
-def detail_HI_plot(hi_df:pd.DataFrame,datetime_intervals,interval_annotations=None,start_date=None,end_date=None,figsize=(15,5),major_locator=None):
+def event_plot(events,y_coord,label=None,annotations=None,arrowprops=None,ax=None):
+    '''Plots a specific type of events, all with the same format'''
+    if ax is None:
+        ax=plt.gca()
+    try:
+        iter(events)
+    except:
+        ValueError(f"events variable must be an iterable. {type(events)} is not iterable")
+    ax.scatter(events,[y_coord]*len(events),marker='x',s=800,label=label)
 
+    if annotations is not None:
+        bbox = dict(boxstyle="round", fc="0.8")
+        if arrowprops is None:
+            arrowprops = dict(
+                arrowstyle="->",
+                connectionstyle="angle,angleA=0,angleB=90,rad=10",
+                facecolor='red',linewidth=2,edgecolor='red')
+
+        for e_dt,ann in zip(events,annotations):
+            if ann!='':
+                ax.annotate(ann,(e_dt,.5),bbox=bbox,arrowprops=arrowprops,
+                            xytext=(50,50),textcoords='offset points',annotation_clip=False)
+    return ax
+
+
+def detail_HI_plot(hi_df_in:pd.DataFrame,datetime_intervals,interval_annotations=None,
+                   events=None,event_annotations=None,events_labeel=None,events_arrowprops=None,
+                   start_date=None,end_date=None,figsize=(15,5),major_locator=None):
+    hi_df=copy.copy(hi_df_in)
+    
     if type(start_date) ==str:
         start_date,_ = string_to_datetime(start_date)
     if type(end_date) ==str:
@@ -154,6 +183,8 @@ def detail_HI_plot(hi_df:pd.DataFrame,datetime_intervals,interval_annotations=No
                     )
     
     ax=time_interval_plotting(datetime_intervals,xmin,xmax,annotations=interval_annotations)
+
+    ax=event_plot(events,.5,events_labeel,event_annotations,events_arrowprops,ax)
     #plt.ylim(0,140)
     ax.grid()
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
