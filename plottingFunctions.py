@@ -204,14 +204,21 @@ def detail_HI_plot(hi_df_in:pd.DataFrame,datetime_intervals,interval_annotations
 
 def HI_MS_plot(HI_data,ms_resampled):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    hi_plot=go.Scatter(x=HI_data['timestamp'], y=HI_data['HI'])
-    # Add traces
 
-    for i in range(4):
+    n=4
+    for i in range(n):
         fig.add_trace(go.Bar(x=ms_resampled.reset_index()['timestamp'], y=ms_resampled.reset_index()[f'MS_{i}'],
                         name=f'MS_{i}'),secondary_y=True)
+    hi_plot=go.Scatter(x=HI_data['timestamp'], y=HI_data['HI'],marker_color=HI_data['HI'])
+    # Add traces
     fig.add_trace(
         hi_plot,
         secondary_y=False
     )
+    layout = go.Layout(title='HI and MS plot',
+                    xaxis=dict(title=''),
+                    yaxis=dict(title='HI', side='left', color='blue', range=[0, 100]),  # Set y-axis range here
+                    yaxis2=dict(title='MS plot', side='right', overlaying='y', color='red', range=[0, n*3600]),barmode='stack')
+    fig.update_layout(layout)
+    #fig = go.Figure([hi_plot])
     return fig
