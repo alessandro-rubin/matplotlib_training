@@ -8,8 +8,12 @@ from datetime import timedelta
 import matplotlib.dates as mdates
 import matplotlib.colors as mcolors
 from dateutil.parser import parse
+from plotly.subplots import make_subplots
+import plotly.graph_objs as go
+import plotly.io as pio
 
-def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.DataFrame,datetime_intervals_2_:pd.DataFrame):
+
+def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.DataFrame,datetime_intervals_2_:pd.DataFrame,interv_padding=0.5):
     data=copy.copy(data2)
     datetime_intervals=copy.copy(datetime_intervals_)
     datetime_intervals_2=copy.copy(datetime_intervals_2_)
@@ -19,15 +23,9 @@ def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.Data
     ax=sns.boxplot( data=data,x='Numerical_Date',y='value')
 
     dates=data['date'].drop_duplicates()
-    ax.set_xticklabels(dates.apply(lambda x: x.strftime('%Y-%m-%d')), rotation=45,rotation_mode='anchor',ha='right')
     #ax.set_xticks(dates.toordinal())
 
     print('xtickslabel:')
-
-    locs,labels=plt.xticks()
-    print(f'Locs: {locs}')
-    print(f'Labels: {labels}')
-
     #ax.set_xticks(list(data['Numerical_Date'].unique()))
     ax.set_xticklabels(dates.dt.strftime('%Y-%m-%d'), rotation=45,rotation_mode='anchor',ha='right')
 
@@ -48,9 +46,9 @@ def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.Data
         gf_dates_remapped=np.interp(gf_dates,data['Numerical_Date'].unique(),locs)
         print(gf_dates_remapped)
         if i==0:
-            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange',label="WS")
+            ax.axvspan(gf_dates_remapped[0]-interv_padding,gf_dates_remapped[1]+interv_padding,0,.2, alpha=0.3, color='orange',label="WS")
         else:
-            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0,.2, alpha=0.3, color='orange')
+            ax.axvspan(gf_dates_remapped[0]-interv_padding,gf_dates_remapped[1]+interv_padding,0,.2, alpha=0.3, color='orange')
 
     for i,interval in datetime_intervals_2.iterrows():
         start_date = interval[0].toordinal()
@@ -61,9 +59,9 @@ def plot_daily_boxplot_with_annot(data2:pd.DataFrame,datetime_intervals_:pd.Data
         gf_dates_remapped=np.interp(gf_dates,data['Numerical_Date'].unique(),locs)
         print(gf_dates_remapped)
         if i==0:
-            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple',label="CL")
+            ax.axvspan(gf_dates_remapped[0]-interv_padding,gf_dates_remapped[1]+interv_padding,0.2,0.4, alpha=0.3, color='purple',label="CL")
         else:
-            ax.axvspan(gf_dates_remapped[0]-0.5,gf_dates_remapped[1]+0.5,0.2,0.4, alpha=0.3, color='purple')
+            ax.axvspan(gf_dates_remapped[0]-interv_padding,gf_dates_remapped[1]+interv_padding,0.2,0.4, alpha=0.3, color='purple')
     
     
     plt.legend()
@@ -160,6 +158,7 @@ def event_plot(events,y_coord,label=None,annotations=None,arrowprops=None,ax=Non
 def detail_HI_plot(hi_df_in:pd.DataFrame,datetime_intervals,interval_annotations=None,
                    events=None,event_annotations=None,events_labeel=None,events_arrowprops=None,
                    start_date=None,end_date=None,figsize=(15,5),major_locator=None):
+    ''''''
     hi_df=copy.copy(hi_df_in)
     
     if type(start_date) ==str:
@@ -201,3 +200,18 @@ def detail_HI_plot(hi_df_in:pd.DataFrame,datetime_intervals,interval_annotations
     ax.set_xlim(xmin,xmax)
     #plt.legend([])
     return fig,ax
+
+
+def HI_MS_plot(HI_data,ms_resampled):
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    hi_plot=go.Scatter(x=HI_data['timestamp'], y=HI_data['HI'])
+    # Add traces
+
+    for i in range(4):
+        fig.add_trace(go.Bar(x=ms_resampled.reset_index()['timestamp'], y=ms_resampled.reset_index()[f'MS_{i}'],
+                        name=f'MS_{i}'),secondary_y=True)
+    fig.add_trace(
+        hi_plot,
+        secondary_y=False
+    )
+    return fig
