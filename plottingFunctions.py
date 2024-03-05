@@ -211,8 +211,9 @@ def HI_MS_plot(HI_data,ms_resampled,decimation_factor=10):
     hi_plot=go.Scatter(x=HI_data['timestamp'][::decimation_factor], y=HI_data['HI'][::decimation_factor],marker_color=100-HI_data['HI'][::decimation_factor],    mode='markers',
         marker=dict(
             #color=1-HI_data['HI'][::decimation_factor]/100,
-            colorscale='Turbo',
-            line_width=0
+        colorscale='Turbo',        cmin=0,
+        cmax=100,
+        line_width=0
         ))
     # Add traces
     fig.add_trace(
